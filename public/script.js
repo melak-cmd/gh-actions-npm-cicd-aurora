@@ -8,15 +8,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalId = document.getElementById("modal-id");
   const modalData = document.getElementById("modal-data");
 
+  // Pretty formatter for objects
+  function renderObjectData(data) {
+    if (!data || typeof data !== "object") return "<em>No data</em>";
+
+    return Object.entries(data)
+      .map(([key, value]) => {
+        return `
+          <div class="data-row">
+            <span class="data-key">${key}:</span>
+            <span class="data-value">${value}</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
   async function fetchObjects() {
     const res = await fetch("/api/objects");
     const objects = await res.json();
 
     listEl.innerHTML = "";
+
     objects.forEach(obj => {
       const li = document.createElement("li");
 
-      // Bind background color if data has a "color" property
+      // Background color from data.color (if exists)
       if (obj.data && obj.data.color) {
         li.style.backgroundColor = obj.data.color;
       }
@@ -24,21 +41,21 @@ document.addEventListener("DOMContentLoaded", () => {
       li.innerHTML = `
         <div class="object-id">ID: ${obj.id}</div>
         <div class="object-name">${obj.name}</div>
-        <div class="object-data">${JSON.stringify(obj.data)}</div>
+        <div class="object-data">
+          ${renderObjectData(obj.data)}
+        </div>
       `;
 
       li.addEventListener("click", () => {
         modal.style.display = "block";
+
         modalName.textContent = obj.name;
         modalId.textContent = `ID: ${obj.id}`;
-        modalData.textContent = JSON.stringify(obj.data, null, 2);
+        modalData.innerHTML = renderObjectData(obj.data);
 
-        // Also bind modal background color
-        if (obj.data && obj.data.color) {
-          modal.querySelector(".modal-content").style.backgroundColor = obj.data.color;
-        } else {
-          modal.querySelector(".modal-content").style.backgroundColor = "#fff";
-        }
+        // Modal background color
+        const modalBox = modal.querySelector(".modal-content");
+        modalBox.style.backgroundColor = obj.data?.color || "#fff";
       });
 
       listEl.appendChild(li);
@@ -46,6 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   refreshBtn.addEventListener("click", fetchObjects);
+  
   closeModal.addEventListener("click", () => {
     modal.style.display = "none";
   });
