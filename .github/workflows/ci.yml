@@ -59,4 +59,4 @@ jobs:
       #   with:
       #     context: .
       #     push: true
-      #     tags: melak/aurora-npm-app:${{ github.ref_name }}
+      #     tags: melak/aurora:${{ github.ref_name }}
